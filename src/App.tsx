@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
+  Button,
   FlatList,
   Pressable,
   StatusBar,
@@ -10,12 +11,16 @@ import {
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Snackbar from 'react-native-snackbar';
 import Icons from './components/Icons';
+import ConfettiCannon from 'react-native-confetti-cannon';
+
 
 function App() {
   const [isCross, setIsCross] = useState<boolean>(true);
   const [gameWinner, setGameWinner] = useState<string>('');
   const setEmptyGame = () => new Array(9).fill('empty', 0, 9);
   const [gameState, setGameState] = useState(setEmptyGame);
+  const confettiRef = useRef<any>(null);
+  const isWinner = gameWinner !== 'Draw game... ⏳' && gameWinner
 
   const reloadGame = () => {
     setIsCross(false);
@@ -78,7 +83,9 @@ function App() {
   };
 
   const onChangeItem = (itemNumber: number) => {
-    if (gameWinner) {
+    if (isWinner) {
+      confettiRef.current.start()
+
       return Snackbar.show({
         text: gameWinner,
         backgroundColor: '#000000',
@@ -113,7 +120,7 @@ function App() {
         ) : (
           <View style={styles.turnBox}>
             <Text style={styles.turnText}>
-              Player {isCross ? '❌' : '⭕'}'s turn
+              Player {isCross ? 'X' : 'O'}'s turn
             </Text>
           </View>
         )}
@@ -134,9 +141,21 @@ function App() {
 
         <Pressable style={styles.reloadBtn} onPress={reloadGame}>
           <Text style={styles.reloadText}>
-            {gameWinner ? 'Start New Game' : 'Reload Game'}
+            {gameWinner ? 'Start New Game 🆕' : 'Reload Game 🔁'}
           </Text>
         </Pressable>
+
+        {isWinner && <ConfettiCannon
+          count={100}
+          origin={{ x: 200, y: 500 }}
+          autoStart={true}
+          ref={confettiRef}
+          fadeOut={true}
+          explosionSpeed={300}
+          fallSpeed={2000}
+          colors={['orange', 'white', 'lightgreen', 'blue']}
+        />}
+
       </View>
     </SafeAreaProvider>
   );
@@ -155,8 +174,8 @@ const styles = StyleSheet.create({
     color: '#f8f8f8ff',
     fontWeight: '700',
     marginBottom: 10,
-    borderBottomColor : "white",
-    borderBottomWidth : 1
+    borderBottomColor: "white",
+    borderBottomWidth: 1
   },
   turnBox: {
     marginVertical: 10,
